@@ -34,7 +34,7 @@ color = make_color_rgb(125, 255, 185);
 alpha = 1;
 image_speed = 0.3;
 
-maxSpeed = 1;
+maxSpeed = 2;
 </string>
           </argument>
         </arguments>
@@ -63,8 +63,6 @@ colDir = point_direction(x, y, other.x, other.y) + 180;
 
 speed = -speed;
 motion_add(colDir, oSpeed + 0.3);
-
-if (speed &gt; maxSpeed) speed = maxSpeed;
 </string>
           </argument>
         </arguments>
@@ -102,6 +100,8 @@ draw_sprite_ext(spr_head, 0, x, y - 10, xscale*flip, yscale, angle, color, alpha
 if (dis &gt; 6) motion_add(dir, 0.2);
 
 depth = -y;
+
+if (speed &gt; maxSpeed) speed = maxSpeed;
 </string>
           </argument>
         </arguments>
