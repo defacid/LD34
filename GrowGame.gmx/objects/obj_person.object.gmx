@@ -30,11 +30,26 @@
 xscale = 1;
 yscale = 1;
 angle = 0;
-color = make_color_rgb(125, 255, 185);
+color = make_color_rgb(155 + random(100), 155 + random(100), 155 + random(100));
 alpha = 1;
 image_speed = 0.3;
 
-maxSpeed = 2;
+squash = 0;
+maxSquash = 0.5;
+
+tween = 0;
+maxTween = 0.25;
+
+maxRun = 3;
+maxSpeed = 5;
+
+held = 0;
+tilt = 0;
+height = 0;
+
+selected = 0;
+
+leafAngle = 60 - random(90);
 </string>
           </argument>
         </arguments>
@@ -57,12 +72,16 @@ maxSpeed = 2;
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>var oSpeed, colDir;
-oSpeed = speed;
-colDir = point_direction(x, y, other.x, other.y) + 180;
-
-speed = -speed;
-motion_add(colDir, oSpeed + 0.3);
+            <string>if (!held) {
+    var oSpeed, colDir;
+    oSpeed = speed;
+    colDir = point_direction(x, y, other.x, other.y);
+    
+    speed = -speed;
+    motion_add(colDir + 180, oSpeed + 0.3);
+    
+    if (speed &gt; maxRun) speed = maxRun;
+}
 </string>
           </argument>
         </arguments>
@@ -85,22 +104,75 @@ motion_add(colDir, oSpeed + 0.3);
         <arguments>
           <argument>
             <kind>1</kind>
-            <string>if (speed == 0) image_index = 0;
+            <string>var dir, dis, flip;
+    dir = point_direction(x, y, mouse_x, mouse_y);
+    dis = point_distance(x, y, mouse_x, mouse_y);
+    flip = 1;
+    
+if (held) image_speed = 0.5;
+else if (speed == 0) image_index = 0;
 else image_speed = speed/10;
 
-var dir, dis, flip;
-dir = point_direction(x, y, mouse_x, mouse_y);
-dis = point_distance(x, y, mouse_x, mouse_y);
-flip = 1;
-if (dir &gt; 90 &amp;&amp; dir &lt; 270) flip = -1;
+if (tween &gt; maxTween) tween = maxTween;
 
-draw_sprite_ext(spr_person, image_index, x, y, xscale*flip, yscale, angle, color, alpha);
-draw_sprite_ext(spr_head, 0, x, y - 10, xscale*flip, yscale, angle, color, alpha);
+if (tween &gt; 0) tween -= (1 - tween)/16;
+else tween = 0;
 
-if (dis &gt; 6) motion_add(dir, 0.2);
+if (squash &gt; maxSquash) squash = maxSquash;
+
+if (squash &gt; 0) squash -= (1 - squash)/16;
+else squash = 0;
+
+if (height &gt; 0) {
+    height -= 3;
+    friction = 0;
+}
+if (height &lt; 0) {
+    friction = 0.1;
+    height = 0;
+    squash = 0.25;
+}
+
+draw_set_alpha(0.25);
+draw_set_color(c_black);
+draw_ellipse(x - 8 - height/8, y + 12 - 2 - height/8, x + 8 + height/8, y + 12 + 2 + height/8, 0); 
+
+draw_set_alpha(1);
+
+if (held) {
+    height = 20;
+    x = mouse_x;
+    y = mouse_y;
+    
+    tilt += 5;
+    angle = 15*dcos(tilt);
+    
+    draw_sprite_ext(spr_person, image_index, x, y - height, (xscale - tween)*flip, yscale - squash, angle, color, alpha);
+    draw_sprite_ext(spr_leaves, 1, x + lengthdir_x(10*(1-squash), 90 + angle) + lengthdir_x(6, 90), y - height + lengthdir_y(10*(1-squash), 90 + angle) + lengthdir_y(6, 90), xscale - tween, (yscale - squash), 30, color, alpha);
+    draw_sprite_ext(spr_head, 5, x + lengthdir_x(10*(1-squash), 90 + angle), y - height + lengthdir_y(10*(1-squash), 90 + angle), xscale - tween, (yscale - squash)*flip, 0, color, alpha);
+}
+else if (selected){
+    if (dir &gt; 90 &amp;&amp; dir &lt; 270) flip = -1;
+    
+    draw_sprite_ext(spr_person, image_index, x, y - height, (xscale - tween)*flip, yscale - squash, angle, color, alpha);
+    draw_sprite_ext(spr_leaves, 1, x + lengthdir_x(10*(1-squash), 90 + angle) + lengthdir_x(6, dir), y - height + lengthdir_y(10*(1-squash), 90 + angle) + lengthdir_y(6, dir), xscale - tween, (yscale - squash)*flip, dir + 30, color, alpha);
+    draw_sprite_ext(spr_head, 4, x + lengthdir_x(10*(1-squash), 90 + angle), y - height + lengthdir_y(10*(1-squash), 90 + angle), xscale - tween, (yscale - squash)*flip, dir, color, alpha);
+    
+    draw_set_color(c_black);
+    draw_circle(x, y - 32, 4, 0);
+    draw_set_color(color);
+    draw_circle(x, y - 32, 3, 0);
+    
+    if (dis &gt; 6 &amp;&amp; speed &lt; maxRun) motion_add(dir, 0.2);
+}
+else {
+    
+    draw_sprite_ext(spr_person, image_index, x, y - height, (xscale - tween)*flip, yscale - squash, angle, color, alpha);
+    draw_sprite_ext(spr_leaves, 1, x + lengthdir_x(10*(1-squash), 90 + angle) + lengthdir_x(6, 90), y - height + lengthdir_y(10*(1-squash), 90 + angle) + lengthdir_y(6, 90), xscale - tween, (yscale - squash)*flip, 30, color, alpha);
+    draw_sprite_ext(spr_head, 0, x + lengthdir_x(10*(1-squash), 90 + angle), y - height + lengthdir_y(10*(1-squash), 90 + angle), (xscale - tween)*flip, yscale - squash, 0, color, alpha);
+}
 
 depth = -y;
-
 if (speed &gt; maxSpeed) speed = maxSpeed;
 </string>
           </argument>

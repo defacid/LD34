@@ -11,11 +11,20 @@
     <sprite>sprites\spr_head</sprite>
     <sprite>sprites\spr_leaves</sprite>
     <sprite>sprites\msk_person</sprite>
+    <sprite>sprites\spr_camera</sprite>
+    <sprite>sprites\spr_cursor</sprite>
   </sprites>
-  <backgrounds name="background"/>
+  <backgrounds name="background">
+    <background>background\bkg_grass</background>
+  </backgrounds>
   <paths name="paths"/>
+  <fonts name="fonts">
+    <font>fonts\fnt_hud</font>
+  </fonts>
   <objects name="objects">
     <object>objects\obj_person</object>
+    <object>objects\obj_controller</object>
+    <object>objects\obj_plant</object>
   </objects>
   <rooms name="rooms">
     <room>rooms\rm_game</room>
